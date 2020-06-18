@@ -16,12 +16,15 @@ require 'optparse'
 @options[:dir] = Dir.pwd
 @checkedDirs = []
 @librarys = ''
+@options[:jar] = false
+@manifest = ''
+@allJavaFiles = ''
 
 OptionParser.new do |opts|
   opts.banner = "BetterJavaCompile [options]"
   opts.on( '-l', '--libdir [DIR]',String , 'Choose another library directory') do |libdir|
+    abort "You can't use --libdir without specifying a directory!" if libdir == nil
     @options[:libDir] = libdir
-    puts "set libdir to #{@options[:libDir]}"
   end
   opts.on( '-v', '--verbose', 'Output more information') do
     @options[:verbose] = true
@@ -30,10 +33,17 @@ OptionParser.new do |opts|
     @options[:verbose] = false
   end
   opts.on( '-d', '--directory [DIR]', String,  'The top-level directory') do |d|
+    abort "You can't use --directory without specifying a directory" if d == nil
     @options[:dir] = d
   end
   opts.on( '-j', '--javacOptions [OPTSTRING]', String, 'Add custom javac options') do |jo|
+    abort "You can't use --javacOptions without specifying which options to use!" if jo == nil
     @options[:javac] = jo
+  end
+  opts.on( '--jar [MANIFEST]', String, 'Create a jar from manifest') do |manifest|
+    abort "You need to specify a MANIFEST for creating a jar file!" if manifest == nil
+    @options[:jar] = true
+    @manifest = manifest
   end
   opts.on( '-h', '--help', 'Display this screen' ) do
     puts opts
@@ -54,7 +64,7 @@ def compileDir(path)
     end
   end
   if javaFiles != ""
-    puts "> #{(path != @options[:dir]) ? path.gsub(@options[:dir],'')[1..-1] : 'Top Level'}\n  > #{javaFiles.split(' ').map {|s| s.split('/').last}.join(' ').gsub('.java','')}" if @options[:verbose]
+    puts "> #{(path != @options[:dir]) ? relativize(path) : 'Top Level'}\n  > #{javaFiles.split(' ').map {|s| s.split('/').last}.join(' ').gsub('.java','')}" if @options[:verbose]
     unless @checkedDirs == []
       `javac #{@options[:javac]} -cp ".#{@librarys + ":" + @checkedDirs.to_s.delete("[],\"").gsub(' ',':')}" #{javaFiles}`
     else
@@ -62,7 +72,16 @@ def compileDir(path)
     end
     puts 'done' if @options[:verbose]
   end
+  @allJavaFiles += " " + javaFiles
   @checkedDirs << path
 end
 
+def relativize(path)
+  return path.gsub(@options[:dir],'').gsub(' /',' ')
+end
+
 compileDir @options[:dir]
+if @options[:jar]
+  puts "Compressing the compiled code to output.jar"
+  `jar cmf #{@manifest + ' output.jar' + relativize(@librarys.gsub(':',' ') + ' ' + @allJavaFiles + ' ' + @allJavaFiles.gsub('.java ', '.class '))}`
+end

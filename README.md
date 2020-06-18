@@ -24,7 +24,7 @@ sudo make install
 > Just do `BJC -h` and you will see all possible flags
 
 + Can I add custom javac flags?
-> Yes you can, just use the
+> Yes you can, just pass a string of all options you want(enlosed in ") behind the -j flag
 
 + Why is there a questionmark behind the mac?
 > I don't own a mac so I couldn't test it there, but I am rather sure it should also work on a mac!(feel free to send me a message if one of you tried^^)

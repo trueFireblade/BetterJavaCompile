@@ -11,6 +11,8 @@ BJC \- Better Java Compile
 .IR directory ]
 .RB [ \-j
 .IR options ]
+.RB [ \--jar
+.IR manifest ]
 
 BJC
 .RB \-h
@@ -20,27 +22,38 @@ BJC allowes you to compile whole Java Projects from the top folder without the u
 
 .SH OPTIONS
 
-.IP -l, --libdir
+.TP
+\fB\-l\fR, \fB\-\-libdir\fR \fI\,DIRECTORY\/\fR
 Lets you choose another directory for jar-librarys than the default ./.libs It only works with relative paths compared to the
 .BR --directory
 
-.IP -v, --verbose
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
 Activates verbose mode, only usefull when you set it to false in the sourcecode
 
-.IP -q, --quiet
+.TP
+\fB\-q\fR, \fB\-\-quiet\fR
 Basicly the opposite of
 .BR --verbose
 , it turns of any messages except javac errors!
 
-.IP -d, --directory
+.TP
+\fB\-d\fR, \fB\-\-directory\fR \fI\,DIRECTORY\/\fR
 Changes the top-level directory of the program, so you can use it while being in e.g. a subdirectory. Works with both relative and absolute paths.
 
-.IP -j, --javacOptions
+.TP
+\fB\-j\fR, \fB\-\-javacOptions\fR \fI\,ARGS\/\fR
 Allows you to add custom javac options, this inclues every option except
 .BR --classpath
 since that one has to be set by BJC
 
-.IP -h, --help
+.TP
+\fB\-\-jar\fR \fI\,MANIFEST\/\fR
+Allows you to build a jar file from the files it compiles and the given manifest file
+
+
+.TP
+\fB\-h\fR, \fB\-\-help\fR
 Shows a small help page with a short description of all options
 
 .SH AUTHOR
