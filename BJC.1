@@ -1,0 +1,58 @@
+.TH BJC 1 "" "" "BJC 1.0"
+.SH NAME
+BJC \- Better Java Compile
+.SH SYNOPSIS
+.B BJC
+.RB [ \-l
+.IR directory ]
+.RB [ \-v ]
+.RB [ \-q ]
+.RB [ \-d
+.IR directory ]
+.RB [ \-j
+.IR options ]
+
+BJC
+.RB \-h
+
+.SH DESCRIPTION
+BJC allowes you to compile whole Java Projects from the top folder without the use of any IDE etc. It is just a simple application that you just run and it compiles the whole folderstructure for you from bottom to top in the right order.
+
+.SH OPTIONS
+
+.IP -l, --libdir
+Lets you choose another directory for jar-librarys than the default ./.libs It only works with relative paths compared to the
+.BR --directory
+
+.IP -v, --verbose
+Activates verbose mode, only usefull when you set it to false in the sourcecode
+
+.IP -q, --quiet
+Basicly the opposite of
+.BR --verbose
+, it turns of any messages except javac errors!
+
+.IP -d, --directory
+Changes the top-level directory of the program, so you can use it while being in e.g. a subdirectory. Works with both relative and absolute paths.
+
+.IP -j, --javacOptions
+Allows you to add custom javac options, this inclues every option except
+.BR --classpath
+since that one has to be set by BJC
+
+.IP -h, --help
+Shows a small help page with a short description of all options
+
+.SH AUTHOR
+Written by Annie Herrmann(annieherrmann03@gmail.com)
+
+.SH REPORTING BUGS
+Please report any bug you can find to either the github page or to my email!
+
+.SH LICENSE
+See the LICENSE file, if you deleted the git clone after the installation, go to my github for it!
+
+.SH SEE ALSO
+.BR javac (1),
+.BR java (1),
+.BR ruby (1)

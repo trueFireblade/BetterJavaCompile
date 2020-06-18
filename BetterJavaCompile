@@ -1,0 +1,68 @@
+#!/bin/ruby
+require 'optparse'
+
+@options = {}
+# The name of the default directory for jar-librarys. If you don't use any jar librarys just ignore it. If you want to store your librarys in your top-level folder(the one you either execute this from or specified in the --directory option) change it to '.'. Please note that this curently only supports relative paths to the top-level directory, so you cannot use absolute paths!
+@options[:libDir] = '.libs'
+
+# Default setting for whether you want more or less information!
+@options[:verbose] = true
+
+# Your default javac options, only change these if you know what you are doing or javac might not work as intended.
+@options[:javac] = ''
+
+
+# Start of real code:
+@options[:dir] = Dir.pwd
+@checkedDirs = []
+@librarys = ''
+
+OptionParser.new do |opts|
+  opts.banner = "BetterJavaCompile [options]"
+  opts.on( '-l', '--libdir [DIR]',String , 'Choose another library directory') do |libdir|
+    @options[:libDir] = libdir
+    puts "set libdir to #{@options[:libDir]}"
+  end
+  opts.on( '-v', '--verbose', 'Output more information') do
+    @options[:verbose] = true
+  end
+  opts.on( '-q', '--quiet', 'No text except your javac errors') do
+    @options[:verbose] = false
+  end
+  opts.on( '-d', '--directory [DIR]', String,  'The top-level directory') do |d|
+    @options[:dir] = d
+  end
+  opts.on( '-j', '--javacOptions [OPTSTRING]', String, 'Add custom javac options') do |jo|
+    @options[:javac] = jo
+  end
+  opts.on( '-h', '--help', 'Display this screen' ) do
+    puts opts
+    exit
+  end
+end.parse!
+
+Dir[@options[:dir] + '/' + @options[:libDir] + '/*'].each {|f| @librarys += ":#{f}" if f.match /\.jar$/}
+puts "Starting to compile with following librarys: #{@librarys.to_s.delete("[],\":")}" if @options[:verbose]
+
+def compileDir(path)
+  javaFiles = ''
+  Dir[path + '/*'].each do |f|
+    if File::directory? f
+      compileDir f
+    elsif f.match /\.java$/
+      javaFiles += (f + ' ')
+    end
+  end
+  if javaFiles != ""
+    puts "> #{(path != @options[:dir]) ? path.gsub(@options[:dir],'')[1..-1] : 'Top Level'}\n  > #{javaFiles.split(' ').map {|s| s.split('/').last}.join(' ').gsub('.java','')}" if @options[:verbose]
+    unless @checkedDirs == []
+      `javac #{@options[:javac]} -cp ".#{@librarys + ":" + @checkedDirs.to_s.delete("[],\"").gsub(' ',':')}" #{javaFiles}`
+    else
+      `javac #{@options[:javac]} -cp ".#{@librarys}" #{javaFiles}`
+    end
+    puts 'done' if @options[:verbose]
+  end
+  @checkedDirs << path
+end
+
+compileDir @options[:dir]
