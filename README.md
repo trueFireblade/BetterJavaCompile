@@ -10,7 +10,8 @@ When using .jar librarys you just have to create a folder called ".libs" in the 
 I try to keep it simple so the only requirements are any version of any **JDK** that includes a normal-functioning `javac` binary and any version of ruby! Both should be pretty easy to get from your favourite package-manager
 
 ## Installation
-```git clone http://github.com/trueFirelblade/BetterJavaCompile
+```
+git clone https://github.com/trueFireblade/BetterJavaCompile.git
 cd BetterJavaCompile
 sudo make install
 ```
