@@ -11,6 +11,7 @@ BJC \- Better Java Compile
 .IR directory ]
 .RB [ \-j
 .IR options ]
+.RB [ \-x ]
 .RB [ \--jar
 .IR manifest ]
 
@@ -48,8 +49,12 @@ Allows you to add custom javac options, this inclues every option except
 since that one has to be set by BJC
 
 .TP
+\fB\-x\fR, \fB\-\-execute\fR \fI\,FILE\/\fR
+Allows you to execute the FILE after compilation
+
+.TP
 \fB\-\-jar\fR \fI\,MANIFEST\/\fR
-Allows you to build a jar file from the files it compiles and the given manifest file
+Allows you to build a jar file from the files it compiles and the given MANIFEST file
 
 
 .TP

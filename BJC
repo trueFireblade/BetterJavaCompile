@@ -14,11 +14,13 @@ require 'optparse'
 
 # Start of real code:
 @options[:dir] = Dir.pwd
+@options[:execute] = false
 @checkedDirs = []
 @librarys = ''
 @options[:jar] = false
 @manifest = ''
 @allJavaFiles = ''
+@execFile = ''
 
 OptionParser.new do |opts|
   opts.banner = "BetterJavaCompile [options]"
@@ -40,6 +42,11 @@ OptionParser.new do |opts|
     abort "You can't use --javacOptions without specifying which options to use!" if jo == nil
     @options[:javac] = jo
   end
+  opts.on( '-x', '--execute [FILE]', String, 'Executes the main method in the FILE after compilation') do |f|
+    abort "You need to specify which file you want to have executed" if f == nil
+    @execFile = f
+    @options[:execute] = true
+  end
   opts.on( '--jar [MANIFEST]', String, 'Create a jar from manifest') do |manifest|
     abort "You need to specify a MANIFEST for creating a jar file!" if manifest == nil
     @options[:jar] = true
@@ -51,8 +58,13 @@ OptionParser.new do |opts|
   end
 end.parse!
 
+def relativize(path)
+  return path.gsub(@options[:dir],'').gsub(' /',' ').gsub(':/',':')
+end
+
 Dir[@options[:dir] + '/' + @options[:libDir] + '/*'].each {|f| @librarys += ":#{f}" if f.match /\.jar$/}
-puts "Starting to compile with following librarys: #{@librarys.to_s.delete("[],\":")}" if @options[:verbose]
+puts "Starting to compile with following librarys:#{relativize(@librarys.gsub(':', ' '))}" if @options[:verbose]
+# .to_s.delete("[],\":")
 
 def compileDir(path)
   javaFiles = ''
@@ -61,14 +73,16 @@ def compileDir(path)
       compileDir f
     elsif f.match /\.java$/
       javaFiles += (f + ' ')
+    elsif f.match /\.class$/
+      File.delete(f)
     end
   end
   if javaFiles != ""
     puts "> #{(path != @options[:dir]) ? relativize(path) : 'Top Level'}\n  > #{javaFiles.split(' ').map {|s| s.split('/').last}.join(' ').gsub('.java','')}" if @options[:verbose]
     unless @checkedDirs == []
-      `javac #{@options[:javac]} -cp ".#{@librarys + ":" + @checkedDirs.to_s.delete("[],\"").gsub(' ',':')}" #{javaFiles}`
+      `javac #{@options[:javac]} -cp ".#{@librarys + ":" + @checkedDirs.to_s.delete("[],\"").gsub(' ',':')}" -d #{@options[:dir]} #{javaFiles}`
     else
-      `javac #{@options[:javac]} -cp ".#{@librarys}" #{javaFiles}`
+      `javac #{@options[:javac]} -cp ".#{@librarys}" -d #{@options[:dir]} #{javaFiles}`
     end
     puts 'done' if @options[:verbose]
   end
@@ -76,12 +90,14 @@ def compileDir(path)
   @checkedDirs << path
 end
 
-def relativize(path)
-  return path.gsub(@options[:dir],'').gsub(' /',' ')
-end
 
 compileDir @options[:dir]
 if @options[:jar]
-  puts "Compressing the compiled code to output.jar"
+  puts "Compressing the compiled code to output.jar" if @options[:verbose]
   `jar cmf #{@manifest + ' output.jar' + relativize(@librarys.gsub(':',' ') + ' ' + @allJavaFiles + ' ' + @allJavaFiles.gsub('.java ', '.class '))}`
+end
+
+if @options[:execute]
+  puts "Executing the output with classpath '.#{@librarys + ":" + relativize(@checkedDirs.join(':'))}'"
+  `java -cp ".#{@librarys + ':' + relativize(@checkedDirs.join(':'))}" #{@execFile.gsub('.java','')}`
 end
