@@ -1,28 +1,24 @@
 #!/bin/ruby
 require 'optparse'
 
+# Definition of Options/Variables
 @options = {}
-# The name of the default directory for jar-librarys. If you don't use any jar librarys just ignore it. If you want to store your librarys in your top-level folder(the one you either execute this from or specified in the --directory option) change it to '.'. Please note that this curently only supports relative paths to the top-level directory, so you cannot use absolute paths!
 @options[:libDir] = '.libs'
-
-# Default setting for whether you want more or less information!
 @options[:verbose] = true
-
-# Your default javac options, only change these if you know what you are doing or javac might not work as intended.
-@options[:javac] = ''
-
-
-# Start of real code:
 @options[:dir] = Dir.pwd
+@options[:javac] = ''
 @options[:execute] = false
+@options[:silent] = false
+@options[:jar] = false
 @checkedDirs = []
 @librarys = ''
-@options[:jar] = false
 @manifest = ''
 @allJavaFiles = ''
 @execFile = ''
-@options[:silent] = false
+@depth = 0
+Dir[@options[:dir] + '/' + @options[:libDir] + '/*'].each {|f| @librarys += ":#{f}" if f.match /\.jar$/}
 
+# Option-flag parser
 OptionParser.new do |opts|
   opts.banner = "BetterJavaCompile [options]"
   opts.on( '-l', '--libdir [DIR]',String , 'Choose another library directory') do |libdir|
@@ -65,19 +61,20 @@ OptionParser.new do |opts|
   end
 end.parse!
 
+# Functions:
+
 def relativize(path)
   return path.gsub(@options[:dir],'').gsub(' /',' ').gsub(':/',':')
 end
-
-Dir[@options[:dir] + '/' + @options[:libDir] + '/*'].each {|f| @librarys += ":#{f}" if f.match /\.jar$/}
-puts "Starting to compile with following librarys:#{relativize(@librarys.gsub(':', ' '))}" if @options[:verbose]
-# .to_s.delete("[],\":")
 
 def compileDir(path)
   javaFiles = ''
   Dir[path + '/*'].each do |f|
     if File::directory? f
+      @depth += 1
+      puts " "*(2*@depth)+"> #{f.split('/')[-1]}" if @options[:verbose]
       compileDir f
+      @depth -= 1
     elsif f.match /\.java$/
       javaFiles += (f + ' ')
     elsif f.match /\.class$/
@@ -85,20 +82,22 @@ def compileDir(path)
     end
   end
   if javaFiles != ""
-    puts "> #{(path != @options[:dir]) ? relativize(path) : 'Top Level'}\n  > #{javaFiles.split(' ').map {|s| s.split('/').last}.join(' ').gsub('.java','')}" if @options[:verbose]
+   puts(' '*(@depth+1)*2 + javaFiles.split(' ').map {|s| s.split('/').last}.join(' ').gsub('.java','')) if @options[:verbose]
     unless @checkedDirs == []
       `javac #{@options[:javac]} -cp ".#{@librarys + ":" + @checkedDirs.to_s.delete("[],\"").gsub(' ',':')}" -d #{@options[:dir]} #{javaFiles}`
     else
       `javac #{@options[:javac]} -cp ".#{@librarys}" -d #{@options[:dir]} #{javaFiles}`
     end
-    puts 'done' if @options[:verbose]
   end
   @allJavaFiles += " " + javaFiles
   @checkedDirs << path
 end
 
-
+# End of function definitions
+puts "Starting to compile with following librarys:#{relativize(@librarys.gsub(':', ' '))}" if @options[:verbose]
+puts "> #{@options[:dir].split('/')[-1]}"
 compileDir @options[:dir]
+
 if @options[:jar]
   puts "Compressing the compiled code to output.jar" if @options[:verbose]
   `jar cmf #{@manifest + ' output.jar' + relativize(@librarys.gsub(':',' ') + ' ' + @allJavaFiles + ' ' + @allJavaFiles.gsub('.java ', '.class '))}`
