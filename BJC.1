@@ -11,7 +11,10 @@ BJC \- Better Java Compile
 .IR directory ]
 .RB [ \-j
 .IR options ]
-.RB [ \-x ]
+.RB [ \-x
+.IR class ]
+.RB [ \-s ]
+.RB [ \-t ]
 .RB [ \--jar
 .IR manifest ]
 
@@ -49,8 +52,24 @@ Allows you to add custom javac options, this inclues every option except
 since that one has to be set by BJC
 
 .TP
-\fB\-x\fR, \fB\-\-execute\fR \fI\,FILE\/\fR
-Allows you to execute the FILE after compilation
+\fB\-x\fR, \fB\-\-execute\fR \fI\,CLASS\/\fR
+Allows you to execute the
+.BR CLASS
+after compilation and opens a terminal for any terminal output, unless
+.BR --silent
+is specified
+
+.TP
+\fB\-s\fR, \fB\-\-silent\fR
+Prevents
+.BR --execute
+from opening a terminal for the execution
+
+.TP
+\fB\-t\fR, \fB-\-terminal\fR
+Spawns a terminal on execution, even if
+.BR --silent
+was specified earlier
 
 .TP
 \fB\-\-jar\fR \fI\,MANIFEST\/\fR

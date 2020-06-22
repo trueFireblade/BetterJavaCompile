@@ -21,6 +21,7 @@ require 'optparse'
 @manifest = ''
 @allJavaFiles = ''
 @execFile = ''
+@options[:silent] = false
 
 OptionParser.new do |opts|
   opts.banner = "BetterJavaCompile [options]"
@@ -46,6 +47,12 @@ OptionParser.new do |opts|
     abort "You need to specify which file you want to have executed" if f == nil
     @execFile = f
     @options[:execute] = true
+  end
+  opts.on( '-s', '--silent', 'Prevents -x from opening a terminal') do
+    @options[:silent] = true
+  end
+  opts.on( '-t', '--terminal', 'Spawns a terminal on execution -> override -s') do
+    @options[:silent] = false
   end
   opts.on( '--jar [MANIFEST]', String, 'Create a jar from manifest') do |manifest|
     abort "You need to specify a MANIFEST for creating a jar file!" if manifest == nil
@@ -98,6 +105,10 @@ if @options[:jar]
 end
 
 if @options[:execute]
-  puts "Executing the output with classpath '.#{@librarys + ":" + relativize(@checkedDirs.join(':'))}'"
-  `java -cp ".#{@librarys + ':' + relativize(@checkedDirs.join(':'))}" #{@execFile.gsub('.java','')}`
+  puts "Executing the output with classpath '.#{relativize(@librarys + ":" + @checkedDirs.join(':'))}'"
+  if @options[:silent]
+    `java -cp ".#{@librarys + ':' + relativize(@checkedDirs.join(':'))}" #{@execFile.gsub('.java','')}`
+  else
+    `$TERMINAL -e $SHELL -c "java -cp \".#{@librarys + ':' + relativize(@checkedDirs.join(':'))}\" #{@execFile.gsub('.java','')}; PS1='' sh"`
+  end
 end

@@ -26,6 +26,9 @@ sudo make install
 + I get a bad-classfile error when trying to compile
 > Due to how the java compiler works its rather annoying to get *import package.\*;* to work correclty, so you either have to import the specific classes *import package.class;* or hava a seperate directory for the java files of the packages. If you do the second one the compiler will automaticly create the directorys according to how you specified it in the *package* function for the class files
 
++ -x doesn't open a terminal for me even though I didn't use -s
+> If *-x* doesn't open a terminal, make sure your terminal is stored is `$TERMINAL` and your shell is stored in `$SHELL` you can check those with a `echo $TERMINAL $SHELL`
+
 + Can I add custom javac flags?
 > Yes you can, just pass a string of all options you want(enlosed in ") behind the -j flag
 
